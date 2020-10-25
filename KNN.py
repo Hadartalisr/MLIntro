@@ -86,8 +86,8 @@ def compare(train, train_labels, test, test_labels, k, n):
         prediction = int(KNN(train[:n], train_labels[:n], test[index], k))
         if label == prediction:
             correct_predictions += 1
-    correct_prediction_pro = correct_predictions / len(test)
-    return correct_prediction_pro
+    correct_predictions_pro = correct_predictions / len(test)
+    return correct_predictions_pro
 
    
     
@@ -120,15 +120,17 @@ def n_variable_accuracy(train, train_labels, test, test_labels,
         where vec[i] = P(test_label == prediction(test)| |test|= i & k = k)'''
     n_arr = np.arange(min_n, (max_n)+1, gap_n)
     p_arr = np.zeros(len(n_arr))
-    for n in range(0,len(n_arr)):
-        p = compare(train, train_labels, test, test_labels, k, n)
-        p_arr[n-1] = p
+    for i in range(0,len(n_arr)):
+        p = compare(train, train_labels, test, test_labels, k, n_arr[i])
+        p_arr[i-1] = p
     return (n_arr, p_arr)
 
 
 def plot_n_accuracy(x,y):
     ''' The method uses plt to plot the accuracy vector. '''    
-    plt.plot(x,y)
+    plt.plot((x+1),y)
+    #plt.xlim(x[0], x[len(x)-1]+1)
+    plt.ylim([0,1])
     plt.xlabel("n")
     plt.ylabel("accuracy")
     
@@ -142,24 +144,24 @@ def main():
     print("The accuracy of the prediction using the first 1000 training "+
           "images, on each of the test images using k = 10 is: " + str(p) 
           + ".")
-    k_vec = k_variable_accuracy(train, train_labels, test, test_labels,10, 1000)
+    k_vec = k_variable_accuracy(train, train_labels, test, test_labels,100, 1000)
     # q.3
     plot_k_accuracy(k_vec)
     best_k = int(k_vec.argsort()[-1:][0])+ 1    # the accuracy of k is in y[k+1]
-    print("The best k is " + str(best_k) + " .")
+    print("The best k is " + str(best_k) + ".")
     """
     add discutions
     
     """
 
     # q.4
-    n_vec = n_variable_accuracy(train, train_labels, test, test_labels,1, 
-                            200,1000,100)
-    plot_n_accuracy(n_vec)
-    return n_vec
+    (n_arr, p_arr) = n_variable_accuracy(train, train_labels, test, test_labels,1, 
+                            200,5000,100)
+    plot_n_accuracy(n_arr, p_arr)
+    best_n = int(k_vec.argsort()[-1:][0])+ 1    # the accuracy of k is in y[k+1]
 
 
-main()
+# main()
 
 
 
