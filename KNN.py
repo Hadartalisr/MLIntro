@@ -2,6 +2,8 @@ from sklearn.datasets import fetch_openml
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.random 
+from scipy.spatial import distance
+import time
 
 
 def load_data():
@@ -39,18 +41,12 @@ def divide_data(data, labels):
     test_labels = labels[idx[10000:]] 
     return (train, train_labels, test, test_labels)
     
-
-def calculate_distance(u, v):
-    '''The method calculates the Euclidean distance between two vectors.'''
-    dist = np.sqrt(np.sum((v-u)**2))
-    return dist
-    
  
 def find_KNN_indices(v, k, train):
     ''' The method returns the indices of the knn in the train_set.'''
     dist_vector = np.full((1,len(train)), np.inf)
     for i in range(0,len(train)):
-        dist_vector[0,i] = calculate_distance(train[i], v)
+        dist_vector[0,i] = distance.euclidean(train[i], v)
     indices_arr = dist_vector[0].argsort()[:k]
     return indices_arr
 
@@ -80,14 +76,14 @@ def compare(train, train_labels, test, test_labels, k, n):
         based on the k-nn and the first n images in the train data.
         
         returns P(test_label == prediction(test))'''
-    correct_predictions = 0
+    false_predictions = 0
     for index in range(0,len(test)):
         label = int(test_labels[index])
         prediction = int(KNN(train[:n], train_labels[:n], test[index], k))
-        if label == prediction:
-            correct_predictions += 1
-    correct_predictions_pro = correct_predictions / len(test)
-    return correct_predictions_pro
+        if label != prediction:
+            false_predictions += 1
+    false_prediction_pro = false_predictions / len(test)
+    return false_prediction_pro
 
    
     
@@ -108,7 +104,7 @@ def plot_k_accuracy(y):
     ''' The method uses plt to plot the accuracy vector. '''    
     plt.plot(range(1,1+len(y)),y)
     plt.xlabel("k")
-    plt.ylabel("accuracy")
+    plt.ylabel("P(false prediction|k)")
     
 
 def n_variable_accuracy(train, train_labels, test, test_labels, 
@@ -122,7 +118,7 @@ def n_variable_accuracy(train, train_labels, test, test_labels,
     p_arr = np.zeros(len(n_arr))
     for i in range(0,len(n_arr)):
         p = compare(train, train_labels, test, test_labels, k, n_arr[i])
-        p_arr[i-1] = p
+        p_arr[i] = p
     return (n_arr, p_arr)
 
 
@@ -140,9 +136,10 @@ def main():
     (data, labels) = load_data()
     (train, train_labels, test, test_labels) = divide_data(data, labels)
     # q.2
-    p = compare(train, train_labels, test, test_labels, 10, 1000)
+    false_prediction_p = compare(train, train_labels, test, test_labels, 10, 1000)
     print("The accuracy of the prediction using the first 1000 training "+
-          "images, on each of the test images using k = 10 is: " + str(p) 
+          "images, on each of the test images using k = 10 is: " + 
+          str(1 - false_prediction_p) 
           + ".")
     k_vec = k_variable_accuracy(train, train_labels, test, test_labels,100, 1000)
     # q.3
