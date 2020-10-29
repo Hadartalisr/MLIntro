@@ -143,13 +143,14 @@ def main():
     k_vec = k_variable_accuracy(train, train_labels, test, test_labels,100, 1000)
     # q.3
     plot_k_accuracy(k_vec)
-    best_k = int(k_vec.argsort()[-1:][0])+ 1    # the accuracy of k is in y[k+1]
+    best_k = int(k_vec.argsort()[0])+ 1    # the accuracy of k is in y[k+1]
     print("The best k is " + str(best_k) + ".")
     # q.4
     (n_arr, p_arr) = n_variable_accuracy(train, train_labels, test, test_labels,1, 
                             200,5000,100)
     plot_n_accuracy(n_arr, p_arr)
-    best_n = int(k_vec.argsort()[-1:][0])+ 1    # the accuracy of k is in y[k+1]
+    best_n = n_arr[int(p_arr.argsort()[0])]    # the accuracy of k is in y[k+1]
+    print("The best n is " + str(best_n) + ".")
 
 
 main()
