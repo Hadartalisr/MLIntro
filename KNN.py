@@ -140,7 +140,7 @@ def main():
           "images, on each of the test images using k = 10 is: " + 
           str(1 - false_prediction_p) 
           + ".")
-    k_vec = k_variable_accuracy(train, train_labels, test, test_labels,100, 1000)
+    k_vec = k_variable_accuracy(train, train_labels, test, test_labels,100, 105)
     # q.3
     plot_k_accuracy(k_vec)
     best_k = int(k_vec.argsort()[0])+ 1    # the accuracy of k is in y[k+1]
