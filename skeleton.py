@@ -30,7 +30,6 @@ class Assignment2(object):
         max_3 = 1
         dist_a = [0.2,0.8]
         dist_b = [0.9,0.1]
-    
         for row in mat:
             x = np.random.random()
             if (x >= min_1 and x <= max_1) or (x >= min_2 and x <= max_2) or (x >= min_3 and x <= max_3):
@@ -39,6 +38,7 @@ class Assignment2(object):
                 y = np.random.choice(y_classes, p=dist_b)
             row[0] = x
             row[1] = y
+        mat = mat[mat[:, 0].argsort()]
         return mat
         
 
@@ -50,8 +50,16 @@ class Assignment2(object):
 
         Returns: None.
         """
-        # TODO: Implement me
-        pass
+        mat = self.sample_from_D(m)
+        plt.plot(mat[:,0],mat[:,1], '.', color="black")
+        plt.ylim(-0.1, 1.1);
+        for x in (0.2,0.4,0.6,0.8):
+            plt.axvline(x=x)
+        interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],3)[0]
+        for interval in interval_arr:
+           plt.fill_between(interval,1.1, -0.1, color="red", alpha=0.2)
+           
+
 
     def experiment_m_range_erm(self, m_first, m_last, step, k, T):
         """Runs the ERM algorithm.
