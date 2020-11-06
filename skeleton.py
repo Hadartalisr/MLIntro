@@ -1,5 +1,5 @@
 #################################
-# Your name:
+# Your name: Hadar Tal
 #################################
 
 import numpy as np
@@ -16,12 +16,31 @@ class Assignment2(object):
     def sample_from_D(self, m):
         """Sample m data samples from D.
         Input: m - an integer, the size of the data sample.
-
         Returns: np.ndarray of shape (m,2) :
                 A two dimensional array of size m that contains the pairs where drawn from the distribution P.
         """
-        # TODO: Implement me
-        pass
+        # x is distributed uniformly on the interval [0,1]
+        mat = np.ndarray(shape=(m,2))
+        y_classes = np.arange(0,2)
+        min_1 = 0 
+        max_1 = 0.2
+        min_2 = 0.4
+        max_2 = 0.6
+        min_3 = 0.8
+        max_3 = 1
+        dist_a = [0.2,0.8]
+        dist_b = [0.9,0.1]
+    
+        for row in mat:
+            x = np.random.random()
+            if (x >= min_1 and x <= max_1) or (x >= min_2 and x <= max_2) or (x >= min_3 and x <= max_3):
+                y = np.random.choice(y_classes, p=dist_a)
+            else:
+                y = np.random.choice(y_classes, p=dist_b)
+            row[0] = x
+            row[1] = y
+        return mat
+        
 
     def draw_sample_intervals(self, m, k):
         """
