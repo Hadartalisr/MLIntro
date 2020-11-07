@@ -8,10 +8,28 @@ import intervals
 
 
 class Assignment2(object):
+    
     """Assignment 2 skeleton.
-
     Please use these function signatures for this assignment and submit this file, together with the intervals.py.
     """
+    
+    figure_number = 0
+    
+    def new_figure(self):
+        figure_number +=1
+        plt.figure(figure_number)
+       
+        
+    def predict(self, intervals, x):
+        """
+        Helper Method for get the prediction of a point by given intervals.
+        return - 1 if the intervals contains the point x, o.w 0
+        """
+        for interval in intervals:
+            if x >= interval[0] and x <= interval[1]:
+                return 1
+        return 0    
+
 
     def sample_from_D(self, m):
         """Sample m data samples from D.
@@ -41,6 +59,19 @@ class Assignment2(object):
         mat = mat[mat[:, 0].argsort()]
         return mat
         
+    
+    def create_sample_and_intervals(self, m, k):
+        """
+        Plots the data as asked in (a) i ii and iii.
+        Input: m - an integer, the size of the data sample.
+               k - an integer, the maximum number of intervals.
+
+        Returns: np.ndarray of shape (m,2) and the intervals.
+        """
+        mat = self.sample_from_D(m)
+        interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],k)[0]
+        return (mat, interval_arr)
+        
 
     def draw_sample_intervals(self, m, k):
         """
@@ -50,16 +81,35 @@ class Assignment2(object):
 
         Returns: None.
         """
-        mat = self.sample_from_D(m)
+        (mat, intervals) = self.create_sample_and_intervals(m, k)
         plt.plot(mat[:,0],mat[:,1], '.', color="black")
-        plt.ylim(-0.1, 1.1);
+        plt.ylim(-0.1, 1.1)
+        plt.xlim(0,1)
         for x in (0.2,0.4,0.6,0.8):
             plt.axvline(x=x)
-        interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],3)[0]
-        for interval in interval_arr:
+        for interval in intervals:
            plt.fill_between(interval,1.1, -0.1, color="red", alpha=0.2)
-           
 
+
+    def calculate_empirical_error(self, mat, intervals):
+        """
+        Calculates the empirical error.
+        Input: np.ndarray of shape (m,2) and the intervals.
+        Returns: the empirical error.
+        """
+        error_rate = 0
+        length = len(mat)
+        for row in mat:
+            prediction = self.predict(intervals,row[0])
+            if(prediction != row[1]):
+                error_rate += 1
+        return error_rate/length
+    
+    
+    def calculate_true_error(self, mat, intervals):
+        
+            
+        
 
     def experiment_m_range_erm(self, m_first, m_last, step, k, T):
         """Runs the ERM algorithm.
@@ -75,8 +125,18 @@ class Assignment2(object):
             A two dimensional array that contains the average empirical error
             and the average true error for each m in the range accordingly.
         """
-        # TODO: Implement the loop
-        pass
+        for m in range(m_first,m_last+1):
+            sum_of_empirical_errors = 0
+            for t in range(0,T):
+                (mat, intervals) =  self.create_sample_and_intervals(m, k)
+                empirical_error = self.calculate_empirical_error(mat,intervals)
+                sum_of_empirical_errors += empirical_error
+            avg_empirical_error = sum_of_empirical_errors/T
+            print("m : " + str(m) + " , avg_empirical_error :" + str(avg_empirical_error))
+            
+        
+        
+        
 
     def experiment_k_range_erm(self, m, k_first, k_last, step):
         """Finds the best hypothesis for k= 1,2,...,10.
@@ -124,10 +184,13 @@ class Assignment2(object):
 
 
 if __name__ == '__main__':
+    
     ass = Assignment2()
-    ass.draw_sample_intervals(100, 3)
-    ass.experiment_m_range_erm(10, 100, 5, 3, 100)
+    ass.draw_sample_intervals(100, 3) 
+    ass.experiment_m_range_erm(10, 20, 5, 3, 100)
+    """
     ass.experiment_k_range_erm(1500, 1, 10, 1)
     ass.experiment_k_range_srm(1500, 1, 10, 1)
     ass.cross_validation(1500, 3)
+    """
 
