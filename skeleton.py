@@ -106,8 +106,45 @@ class Assignment2(object):
         return error_rate/length
     
     
-    def calculate_true_error(self, mat, intervals):
-        
+    def calculate_true_error(self, intervals):
+        """
+        Input -intervals 
+        returns - the true error of the intervals
+        Because the interval is in size 1 , the total length that is not
+        classified correcrly equals the true error
+        """
+        arr = []
+        vals = [(0,0),(0.2,0),(0.4,0),(0.6,0),(0.8,0),(1,0)]
+        inter_vals = []
+        for interval in intervals:
+            inter_vals.append((interval[0],"start"))
+            inter_vals.append((interval[1],"end"))
+        # need to check if to filter possible 2 same x values
+        print(inter_vals)
+        i = j = 0 
+        while(i != len(vals) and j != len(inter_vals)):
+            if(vals[i][0] < inter_vals[j][0]):
+                arr.append(vals[i])
+                i+=1
+            else:
+                arr.append(inter_vals[j])
+                j+=1
+        if i == len(vals):
+            while(j != len(inter_vals)):
+                arr.append(inter_vals[j])
+                j+=1
+        else: 
+            while(i != len(vals)):
+                arr.append(vals[i])
+                i+=1
+        new_arr = []
+        i = 0
+        while i != len(arr)-1:
+            new_elem = (arr[i],arr[i+1])
+            new_arr.append(new_elem)
+            i+=1
+        print(new_arr)
+        return 0
             
         
 
@@ -127,12 +164,18 @@ class Assignment2(object):
         """
         for m in range(m_first,m_last+1):
             sum_of_empirical_errors = 0
+            sum_of_true_errors = 0
             for t in range(0,T):
                 (mat, intervals) =  self.create_sample_and_intervals(m, k)
                 empirical_error = self.calculate_empirical_error(mat,intervals)
                 sum_of_empirical_errors += empirical_error
+                true_error = self.calculate_true_error(intervals)
+                sum_of_true_errors += true_error
             avg_empirical_error = sum_of_empirical_errors/T
-            print("m : " + str(m) + " , avg_empirical_error :" + str(avg_empirical_error))
+            avg_true_error = sum_of_true_errors/T
+            print("m : " + str(m) + 
+                  " , avg_empirical_error :" + str(avg_empirical_error) + 
+                  " , avg_true_error :" + str(avg_true_error) + " .")
             
         
         
@@ -187,7 +230,7 @@ if __name__ == '__main__':
     
     ass = Assignment2()
     ass.draw_sample_intervals(100, 3) 
-    ass.experiment_m_range_erm(10, 20, 5, 3, 100)
+    ass.experiment_m_range_erm(10, 10, 5, 3, 1)
     """
     ass.experiment_k_range_erm(1500, 1, 10, 1)
     ass.experiment_k_range_srm(1500, 1, 10, 1)
