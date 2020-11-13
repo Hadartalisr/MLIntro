@@ -12,13 +12,7 @@ class Assignment2(object):
     """Assignment 2 skeleton.
     Please use these function signatures for this assignment and submit this file, together with the intervals.py.
     """
-    
-    figure_number = 0
-    
-    def new_figure(self):
-        figure_number +=1
-        plt.figure(figure_number)
-       
+        
         
     def predict(self, intervals, x):
         """
@@ -160,6 +154,9 @@ class Assignment2(object):
             A two dimensional array that contains the average empirical error
             and the average true error for each m in the range accordingly.
         """
+        m_vec = []
+        avg_empirical_error_vec = []
+        avg_true_error_vec = []
         for m in range(m_first,m_last+1,step):
             sum_of_empirical_errors = 0
             sum_of_true_errors = 0
@@ -174,8 +171,14 @@ class Assignment2(object):
             print("m : " + str(m) + 
                   " , avg_empirical_error :" + str(avg_empirical_error) + 
                   " , avg_true_error :" + str(avg_true_error) + " .")
-            
-        
+            m_vec.append(m)
+            avg_empirical_error_vec.append(avg_empirical_error)
+            avg_true_error_vec.append(avg_true_error)
+        plt.figure(2)
+        plt.plot(m_vec, avg_empirical_error_vec, color='red', marker='o', 
+                 linestyle='dashed', linewidth=2, markersize=12)
+        plt.plot(m_vec, avg_true_error_vec, color='green', marker='o', 
+                 linewidth=2, markersize=12)        
         
         
 
@@ -189,8 +192,28 @@ class Assignment2(object):
 
         Returns: The best k value (an integer) according to the ERM algorithm.
         """
-        # TODO: Implement the loop
-        pass
+        mat = self.sample_from_D(m)
+        k_vec = []
+        empirical_error_vec = []
+        true_error_vec = []
+        for k in range(k_first, k_last+1,step):
+            interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],k)[0]
+            empirical_error = self.calculate_empirical_error(mat,interval_arr)
+            true_error = self.calculate_true_error(interval_arr)
+
+            print("k : " + str(k) + 
+                  " , empirical_error :" + str(empirical_error) + 
+                  " , true_error :" + str(true_error) + " .")
+            k_vec.append(k)
+            empirical_error_vec.append(empirical_error)
+            true_error_vec.append(true_error)
+        plt.figure(3)   
+        plt.plot(k_vec, empirical_error_vec, color='red', marker='o', 
+                 linestyle='dashed', linewidth=2, markersize=12)
+        plt.plot(k_vec, true_error_vec, color='green', marker='o', 
+                 linewidth=2, markersize=12)
+
+        
 
     def experiment_k_range_srm(self, m, k_first, k_last, step):
         """Runs the experiment in (d).
@@ -225,12 +248,12 @@ class Assignment2(object):
 
 
 if __name__ == '__main__':
-    
     ass = Assignment2()
-    ass.draw_sample_intervals(100, 3) 
-    ass.experiment_m_range_erm(80, 100, 5, 3, 100)
+    # ass.draw_sample_intervals(100, 3) 
+    # ass.experiment_m_range_erm(10, 40, 5, 3, 10)
+    ass.experiment_k_range_erm(300, 1, 10, 1)
+
     """
-    ass.experiment_k_range_erm(1500, 1, 10, 1)
     ass.experiment_k_range_srm(1500, 1, 10, 1)
     ass.cross_validation(1500, 3)
     """
