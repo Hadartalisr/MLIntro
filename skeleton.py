@@ -212,8 +212,16 @@ class Assignment2(object):
                  linestyle='dashed', linewidth=2, markersize=12)
         plt.plot(k_vec, true_error_vec, color='green', marker='o', 
                  linewidth=2, markersize=12)
+        smallest_emp_err_k = k_vec[np.argsort(empirical_error_vec)[0]]
+        print("smallest_emp_err_k: " + str(smallest_emp_err_k))
+        return smallest_emp_err_k
 
+
+    def calc_penalty(self, vcdim, m):
         
+        return 0.1
+        
+
 
     def experiment_k_range_srm(self, m, k_first, k_last, step):
         """Runs the experiment in (d).
@@ -226,8 +234,38 @@ class Assignment2(object):
 
         Returns: The best k value (an integer) according to the SRM algorithm.
         """
-        # TODO: Implement the loop
-        pass
+        # according to q.3 - the VCdim of the subsets of
+        # the real line formed by the union of k intervals is 2k
+        mat = self.sample_from_D(m)
+        k_vec = []
+        empirical_error_vec = []
+        penalty_vec = []
+        true_error_vec = []
+        for k in range(k_first, k_last+1,step):
+            interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],k)[0]
+            empirical_error = self.calculate_empirical_error(mat,interval_arr)
+            true_error = self.calculate_true_error(interval_arr)
+            penalty = self.calc_penalty(2*k)
+            print("k : " + str(k) + 
+                  " , empirical_error :" + str(empirical_error) + 
+                  " , true_error :" + str(true_error) + " .")
+            k_vec.append(k)
+            empirical_error_vec.append(empirical_error)
+            true_error_vec.append(true_error)
+            penalty_vec.append(penalty)
+        penalty_and_emp_error_vec = np.sum([empirical_error_vec,penalty_vec], axis=0)
+        plt.figure(4)   
+        plt.plot(k_vec, empirical_error_vec, color='red', marker='o', 
+                 linestyle='dashed', linewidth=2, markersize=12)
+        plt.plot(k_vec, true_error_vec, color='green', marker='o', 
+                 linewidth=2, markersize=12)
+        plt.plot(k_vec, penalty_vec, color='grey', marker='o', 
+                 linewidth=2, markersize=12)
+        plt.plot(k_vec, penalty_and_emp_error_vec, color='yellow', marker='o', 
+                 linewidth=2, markersize=12)
+        smallest_pen_emp_err_k = k_vec[np.argsort(penalty_and_emp_error_vec)[0]]
+        print("smallest_pen_emp_err_k: " + str(smallest_pen_emp_err_k))  
+
 
     def cross_validation(self, m, T):
         """Finds a k that gives a good test error.
@@ -251,10 +289,8 @@ if __name__ == '__main__':
     ass = Assignment2()
     # ass.draw_sample_intervals(100, 3) 
     # ass.experiment_m_range_erm(10, 40, 5, 3, 10)
-    ass.experiment_k_range_erm(300, 1, 10, 1)
+    # ass.experiment_k_range_erm(100, 1, 10, 1)
+    ass.experiment_k_range_srm(100, 1, 10, 1)
+    # ass.cross_validation(1500, 3)
 
-    """
-    ass.experiment_k_range_srm(1500, 1, 10, 1)
-    ass.cross_validation(1500, 3)
-    """
 
