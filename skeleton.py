@@ -5,7 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import intervals
-
+import math
 
 class Assignment2(object):
     
@@ -110,41 +110,39 @@ class Assignment2(object):
         """
         Input -intervals 
         returns - the true error of the intervals
-        Because the interval is in size 1 , the total length that is not
-        classified correcrly equals the true error
+        pos = [0,0.2]U[0.4,0.6]U[0.8,1] 
+        neg = [0.2,0.4]U[0.6,0.8]
+        we will calculate E[(0-1)loss(h(X),Y)] by the total probabilty law
         """
-        arr = []
-        vals = [(0,0),(0.2,0),(0.4,0),(0.6,0),(0.8,0),(1,0)]
-        inter_vals = []
+        e = 0
+        pos_sum = 0
+        pos_segments = [[0,0.2],[0.4,0.6],[0.8,1]]
+        for seg in pos_segments :
+            pos_sum += self.calc_intersection(intervals, seg[0], seg[1])
+        e += 0.2*pos_sum # false positive
+        e += (0.6-pos_sum) * 0.8 # false prediction of 0 in pos_seg
+        neg_sum = 0
+        neg_segments = [[0.2,0.4],[0.6,0.8]]
+        for seg in neg_segments :
+            neg_sum += self.calc_intersection(intervals, seg[0], seg[1])
+        e += 0.9*neg_sum # false positive
+        e+= (0.4-neg_sum) * 0.1 # false prediction of 1 in neg_seg
+        return e
+    
+    
+    def calc_intersection(self, intervals, a, b):
+        """
+        The method returns the intersection of the intervals 
+        with the segment [a, b]
+        """
+        sum = 0
         for interval in intervals:
-            inter_vals.append((interval[0],"start"))
-            inter_vals.append((interval[1],"end"))
-        # need to check if to filter possible 2 same x values
-        print(inter_vals)
-        i = j = 0 
-        while(i != len(vals) and j != len(inter_vals)):
-            if(vals[i][0] < inter_vals[j][0]):
-                arr.append(vals[i])
-                i+=1
-            else:
-                arr.append(inter_vals[j])
-                j+=1
-        if i == len(vals):
-            while(j != len(inter_vals)):
-                arr.append(inter_vals[j])
-                j+=1
-        else: 
-            while(i != len(vals)):
-                arr.append(vals[i])
-                i+=1
-        new_arr = []
-        i = 0
-        while i != len(arr)-1:
-            new_elem = (arr[i],arr[i+1])
-            new_arr.append(new_elem)
-            i+=1
-        print(new_arr)
-        return 0
+            start = max(a,interval[0])
+            end = min(b,interval[1])
+            if(start<end):
+                sum += (end-start)
+        return sum 
+    
             
         
 
@@ -162,7 +160,7 @@ class Assignment2(object):
             A two dimensional array that contains the average empirical error
             and the average true error for each m in the range accordingly.
         """
-        for m in range(m_first,m_last+1):
+        for m in range(m_first,m_last+1,step):
             sum_of_empirical_errors = 0
             sum_of_true_errors = 0
             for t in range(0,T):
@@ -230,7 +228,7 @@ if __name__ == '__main__':
     
     ass = Assignment2()
     ass.draw_sample_intervals(100, 3) 
-    ass.experiment_m_range_erm(10, 10, 5, 3, 1)
+    ass.experiment_m_range_erm(80, 100, 5, 3, 100)
     """
     ass.experiment_k_range_erm(1500, 1, 10, 1)
     ass.experiment_k_range_srm(1500, 1, 10, 1)
