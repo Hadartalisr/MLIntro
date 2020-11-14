@@ -132,10 +132,10 @@ class Assignment2(object):
             true_error_vec.append(true_error)
         plt.figure(3)   
         plt.plot(k_vec, empirical_error_vec, color='red', marker='o', 
-                 linestyle='dashed', label="average empirical error", 
+                 linestyle='dashed', label="empirical error", 
                  linewidth=2, markersize=8)
         plt.plot(k_vec, true_error_vec,  color='green', marker='o', 
-                 label="average true error",
+                 label="true error",
                  linewidth=2, markersize=8)
         plt.legend()
         plt.xlabel('k')
@@ -309,10 +309,10 @@ class Assignment2(object):
 
 if __name__ == '__main__':
     ass = Assignment2()
-    ass.draw_sample_intervals(100, 3)
-    ass.experiment_m_range_erm(10, 100, 5, 3, 100)
+    # ass.draw_sample_intervals(100, 3)
+    # ass.experiment_m_range_erm(10, 100, 5, 3, 100)
     ass.experiment_k_range_erm(1500, 1, 10, 1)
-    ass.experiment_k_range_srm(1500, 1, 10, 1)
-    ass.cross_validation(1500, 3)
+    # ass.experiment_k_range_srm(1500, 1, 10, 1)
+    # ass.cross_validation(1500, 3)
 
 
