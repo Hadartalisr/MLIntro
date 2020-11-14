@@ -14,15 +14,6 @@ class Assignment2(object):
     """
         
         
-    def predict(self, intervals, x):
-        """
-        Helper Method for get the prediction of a point by given intervals.
-        return - 1 if the intervals contains the point x, o.w 0
-        """
-        for interval in intervals:
-            if x >= interval[0] and x <= interval[1]:
-                return 1
-        return 0    
 
 
     def sample_from_D(self, m):
@@ -53,19 +44,7 @@ class Assignment2(object):
         mat = mat[mat[:, 0].argsort()]
         return mat
         
-    
-    def create_sample_and_intervals(self, m, k):
-        """
-        Plots the data as asked in (a) i ii and iii.
-        Input: m - an integer, the size of the data sample.
-               k - an integer, the maximum number of intervals.
-
-        Returns: np.ndarray of shape (m,2) and the intervals.
-        """
-        mat = self.sample_from_D(m)
-        interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],k)[0]
-        return (mat, interval_arr)
-        
+            
 
     def draw_sample_intervals(self, m, k):
         """
@@ -83,61 +62,7 @@ class Assignment2(object):
             plt.axvline(x=x)
         for interval in intervals:
            plt.fill_between(interval,1.1, -0.1, color="red", alpha=0.2)
-
-
-    def calculate_empirical_error(self, mat, intervals):
-        """
-        Calculates the empirical error.
-        Input: np.ndarray of shape (m,2) and the intervals.
-        Returns: the empirical error.
-        """
-        error_rate = 0
-        length = len(mat)
-        for row in mat:
-            prediction = self.predict(intervals,row[0])
-            if(prediction != row[1]):
-                error_rate += 1
-        return error_rate/length
-    
-    
-    def calculate_true_error(self, intervals):
-        """
-        Input -intervals 
-        returns - the true error of the intervals
-        pos = [0,0.2]U[0.4,0.6]U[0.8,1] 
-        neg = [0.2,0.4]U[0.6,0.8]
-        we will calculate E[(0-1)loss(h(X),Y)] by the total probabilty law
-        """
-        e = 0
-        pos_sum = 0
-        pos_segments = [[0,0.2],[0.4,0.6],[0.8,1]]
-        for seg in pos_segments :
-            pos_sum += self.calc_intersection(intervals, seg[0], seg[1])
-        e += 0.2*pos_sum # false positive
-        e += (0.6-pos_sum) * 0.8 # false prediction of 0 in pos_seg
-        neg_sum = 0
-        neg_segments = [[0.2,0.4],[0.6,0.8]]
-        for seg in neg_segments :
-            neg_sum += self.calc_intersection(intervals, seg[0], seg[1])
-        e += 0.9*neg_sum # false positive
-        e+= (0.4-neg_sum) * 0.1 # false prediction of 1 in neg_seg
-        return e
-    
-    
-    def calc_intersection(self, intervals, a, b):
-        """
-        The method returns the intersection of the intervals 
-        with the segment [a, b]
-        """
-        sum = 0
-        for interval in intervals:
-            start = max(a,interval[0])
-            end = min(b,interval[1])
-            if(start<end):
-                sum += (end-start)
-        return sum 
-    
-            
+                
         
 
     def experiment_m_range_erm(self, m_first, m_last, step, k, T):
@@ -217,9 +142,8 @@ class Assignment2(object):
         return smallest_emp_err_k
 
 
-    def calc_penalty(self, vcdim, m):
-        
-        return 0.1
+    def calc_penalty(self, k, m, delta):
+        return math.sqrt(8 * (math.log(4 / delta) + 2 * k * math.log(math.exp(1) * m / k)) / m)
         
 
 
@@ -245,10 +169,11 @@ class Assignment2(object):
             interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],k)[0]
             empirical_error = self.calculate_empirical_error(mat,interval_arr)
             true_error = self.calculate_true_error(interval_arr)
-            penalty = self.calc_penalty(2*k)
+            penalty = self.calc_penalty(k,m,0.1)
             print("k : " + str(k) + 
                   " , empirical_error :" + str(empirical_error) + 
-                  " , true_error :" + str(true_error) + " .")
+                  " , true_error :" + str(true_error) +
+                  " , penalty :"+ str(penalty)+ " .")
             k_vec.append(k)
             empirical_error_vec.append(empirical_error)
             true_error_vec.append(true_error)
@@ -278,9 +203,86 @@ class Assignment2(object):
         # TODO: Implement me
         pass
 
+
+
     #################################
     # Place for additional methods
 
+    def predict(self, intervals, x):
+        """
+        Helper Method for get the prediction of a point by given intervals.
+        return - 1 if the intervals contains the point x, o.w 0
+        """
+        for interval in intervals:
+            if x >= interval[0] and x <= interval[1]:
+                return 1
+        return 0    
+
+
+    def create_sample_and_intervals(self, m, k):
+        """
+        Plots the data as asked in (a) i ii and iii.
+        Input: m - an integer, the size of the data sample.
+               k - an integer, the maximum number of intervals.
+
+        Returns: np.ndarray of shape (m,2) and the intervals.
+        """
+        mat = self.sample_from_D(m)
+        interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],k)[0]
+        return (mat, interval_arr)
+    
+    
+    def calculate_empirical_error(self, mat, intervals):
+        """
+        Calculates the empirical error.
+        Input: np.ndarray of shape (m,2) and the intervals.
+        Returns: the empirical error.
+        """
+        error_rate = 0
+        length = len(mat)
+        for row in mat:
+            prediction = self.predict(intervals,row[0])
+            if(prediction != row[1]):
+                error_rate += 1
+        return error_rate/length
+    
+    
+    def calculate_true_error(self, intervals):
+        """
+        Input -intervals 
+        returns - the true error of the intervals
+        pos = [0,0.2]U[0.4,0.6]U[0.8,1] 
+        neg = [0.2,0.4]U[0.6,0.8]
+        we will calculate E[(0-1)loss(h(X),Y)] by the total probabilty law
+        """
+        e = 0
+        pos_sum = 0
+        pos_segments = [[0,0.2],[0.4,0.6],[0.8,1]]
+        for seg in pos_segments :
+            pos_sum += self.calc_intersection(intervals, seg[0], seg[1])
+        e += 0.2*pos_sum # false positive
+        e += (0.6-pos_sum) * 0.8 # false prediction of 0 in pos_seg
+        neg_sum = 0
+        neg_segments = [[0.2,0.4],[0.6,0.8]]
+        for seg in neg_segments :
+            neg_sum += self.calc_intersection(intervals, seg[0], seg[1])
+        e += 0.9*neg_sum # false positive
+        e+= (0.4-neg_sum) * 0.1 # false prediction of 1 in neg_seg
+        return e
+    
+    
+    def calc_intersection(self, intervals, a, b):
+        """
+        The method returns the intersection of the intervals 
+        with the segment [a, b]
+        """
+        sum = 0
+        for interval in intervals:
+            start = max(a,interval[0])
+            end = min(b,interval[1])
+            if(start<end):
+                sum += (end-start)
+        return sum 
 
     #################################
 
@@ -290,7 +292,7 @@ if __name__ == '__main__':
     # ass.draw_sample_intervals(100, 3) 
     # ass.experiment_m_range_erm(10, 40, 5, 3, 10)
     # ass.experiment_k_range_erm(100, 1, 10, 1)
-    ass.experiment_k_range_srm(100, 1, 10, 1)
+    ass.experiment_k_range_srm(1000, 1, 10, 1)
     # ass.cross_validation(1500, 3)
 
 
