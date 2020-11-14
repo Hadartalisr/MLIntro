@@ -93,18 +93,20 @@ class Assignment2(object):
                 sum_of_true_errors += true_error
             avg_empirical_error = sum_of_empirical_errors/T
             avg_true_error = sum_of_true_errors/T
-            print("m : " + str(m) + 
-                  " , avg_empirical_error :" + str(avg_empirical_error) + 
-                  " , avg_true_error :" + str(avg_true_error) + " .")
             m_vec.append(m)
             avg_empirical_error_vec.append(avg_empirical_error)
             avg_true_error_vec.append(avg_true_error)
         plt.figure(2)
         plt.plot(m_vec, avg_empirical_error_vec, color='red', marker='o', 
-                 linestyle='dashed', linewidth=2, markersize=12)
+                 linestyle='dashed', label="average empirical error", 
+                 linewidth=2, markersize=8)
         plt.plot(m_vec, avg_true_error_vec, color='green', marker='o', 
-                 linewidth=2, markersize=12)        
-        
+                 label="average true error",
+                 linewidth=2, markersize=8)
+        plt.legend()
+        plt.xlabel('m')
+        mat = np.matrix([avg_empirical_error_vec, avg_true_error_vec]).transpose()
+        return mat
         
 
     def experiment_k_range_erm(self, m, k_first, k_last, step):
@@ -125,25 +127,20 @@ class Assignment2(object):
             interval_arr = intervals.find_best_interval(mat[:,0],mat[:,1],k)[0]
             empirical_error = self.calculate_empirical_error(mat,interval_arr)
             true_error = self.calculate_true_error(interval_arr)
-
-            print("k : " + str(k) + 
-                  " , empirical_error :" + str(empirical_error) + 
-                  " , true_error :" + str(true_error) + " .")
             k_vec.append(k)
             empirical_error_vec.append(empirical_error)
             true_error_vec.append(true_error)
         plt.figure(3)   
         plt.plot(k_vec, empirical_error_vec, color='red', marker='o', 
-                 linestyle='dashed', linewidth=2, markersize=12)
-        plt.plot(k_vec, true_error_vec, color='green', marker='o', 
-                 linewidth=2, markersize=12)
+                 linestyle='dashed', label="average empirical error", 
+                 linewidth=2, markersize=8)
+        plt.plot(k_vec, true_error_vec,  color='green', marker='o', 
+                 label="average true error",
+                 linewidth=2, markersize=8)
+        plt.legend()
+        plt.xlabel('k')
         smallest_emp_err_k = k_vec[np.argsort(empirical_error_vec)[0]]
-        print("smallest_emp_err_k: " + str(smallest_emp_err_k))
         return smallest_emp_err_k
-
-
-    def calc_penalty(self, k, m, delta):
-        return math.sqrt(8 * (math.log(4 / delta) + 2 * k * math.log(math.exp(1) * m / k)) / m)
         
 
 
@@ -170,10 +167,6 @@ class Assignment2(object):
             empirical_error = self.calculate_empirical_error(mat,interval_arr)
             true_error = self.calculate_true_error(interval_arr)
             penalty = self.calc_penalty(k,m,0.1)
-            print("k : " + str(k) + 
-                  " , empirical_error :" + str(empirical_error) + 
-                  " , true_error :" + str(true_error) +
-                  " , penalty :"+ str(penalty)+ " .")
             k_vec.append(k)
             empirical_error_vec.append(empirical_error)
             true_error_vec.append(true_error)
@@ -181,15 +174,19 @@ class Assignment2(object):
         penalty_and_emp_error_vec = np.sum([empirical_error_vec,penalty_vec], axis=0)
         plt.figure(4)   
         plt.plot(k_vec, empirical_error_vec, color='red', marker='o', 
-                 linestyle='dashed', linewidth=2, markersize=12)
+                 linestyle='dashed', linewidth=2,
+                 label="average empirical error", markersize=6)
         plt.plot(k_vec, true_error_vec, color='green', marker='o', 
-                 linewidth=2, markersize=12)
+                 linewidth=2, label="average true error", markersize=6)
         plt.plot(k_vec, penalty_vec, color='grey', marker='o', 
-                 linewidth=2, markersize=12)
+                 linewidth=2,label="penalty", markersize=6)
         plt.plot(k_vec, penalty_and_emp_error_vec, color='yellow', marker='o', 
-                 linewidth=2, markersize=12)
+                 linewidth=2, markersize=6,
+                 label="sum of AEE and penalty")
         smallest_pen_emp_err_k = k_vec[np.argsort(penalty_and_emp_error_vec)[0]]
-        print("smallest_pen_emp_err_k: " + str(smallest_pen_emp_err_k))  
+        plt.legend()
+        plt.xlabel('k')
+        return smallest_pen_emp_err_k  
 
 
     def cross_validation(self, m, T):
@@ -200,26 +197,24 @@ class Assignment2(object):
 
         Returns: The best k value (an integer) found by the cross validation algorithm.
         """
-        per = int(0.8*m)
         test_error_vec = np.zeros(10)
         for t in range(0,T):
-            print(t)
-            mat = self.sample_from_D(m)
-            train = mat[:per]
-            test = mat[per:]
-            
+            train = self.sample_from_D(int(0.8*m))
+            test = self.sample_from_D(int(0.2*m))
             for k in range(1,11,1):
-                print(k)
                 interval_arr = intervals.find_best_interval(train[:,0],train[:,1],k)[0]
-                print(interval_arr)
                 test_error = self.calculate_empirical_error(test,interval_arr)
-                print(test_error)
                 test_error_vec[k-1] += test_error
         test_error_vec = np.divide(test_error_vec,T)
+        # print(test_error_vec)
         plt.figure(5)   
-        plt.plot(k_vec, test_error_vec, color='red', marker='o', 
-                 linewidth=2, markersize=12)
-        return 0
+        plt.plot(range(1,11), test_error_vec, color='red', marker='o', 
+                 label="average test error", linewidth=2, markersize=12)
+        plt.xlabel('k')
+        plt.legend()
+        smallest_test_err_k = (np.argsort(test_error_vec)[0])+1
+        # print("smallest_test_err_k: " + str(smallest_test_err_k))  
+        return smallest_test_err_k
 
 
 
@@ -302,16 +297,22 @@ class Assignment2(object):
             if(start<end):
                 sum += (end-start)
         return sum 
+    
+    
+    def calc_penalty(self, k, m, delta):
+        return math.sqrt(8 * (math.log(4 / delta) + 2 * k * math.log(math.exp(1) * m / k)) / m)
+    
+
 
     #################################
 
 
 if __name__ == '__main__':
     ass = Assignment2()
-    # ass.draw_sample_intervals(100, 3) 
-    # ass.experiment_m_range_erm(10, 40, 5, 3, 10)
-    # ass.experiment_k_range_erm(100, 1, 10, 1)
-    # ass.experiment_k_range_srm(1000, 1, 10, 1)
-    ass.cross_validation(500, 3)
+    ass.draw_sample_intervals(100, 3)
+    ass.experiment_m_range_erm(10, 100, 5, 3, 100)
+    ass.experiment_k_range_erm(1500, 1, 10, 1)
+    ass.experiment_k_range_srm(1500, 1, 10, 1)
+    ass.cross_validation(1500, 3)
 
 
