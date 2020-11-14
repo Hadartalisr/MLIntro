@@ -200,8 +200,26 @@ class Assignment2(object):
 
         Returns: The best k value (an integer) found by the cross validation algorithm.
         """
-        # TODO: Implement me
-        pass
+        per = int(0.8*m)
+        test_error_vec = np.zeros(10)
+        for t in range(0,T):
+            print(t)
+            mat = self.sample_from_D(m)
+            train = mat[:per]
+            test = mat[per:]
+            
+            for k in range(1,11,1):
+                print(k)
+                interval_arr = intervals.find_best_interval(train[:,0],train[:,1],k)[0]
+                print(interval_arr)
+                test_error = self.calculate_empirical_error(test,interval_arr)
+                print(test_error)
+                test_error_vec[k-1] += test_error
+        test_error_vec = np.divide(test_error_vec,T)
+        plt.figure(5)   
+        plt.plot(k_vec, test_error_vec, color='red', marker='o', 
+                 linewidth=2, markersize=12)
+        return 0
 
 
 
@@ -244,7 +262,8 @@ class Assignment2(object):
             prediction = self.predict(intervals,row[0])
             if(prediction != row[1]):
                 error_rate += 1
-        return error_rate/length
+        emp_error = error_rate/length
+        return emp_error
     
     
     def calculate_true_error(self, intervals):
@@ -292,7 +311,7 @@ if __name__ == '__main__':
     # ass.draw_sample_intervals(100, 3) 
     # ass.experiment_m_range_erm(10, 40, 5, 3, 10)
     # ass.experiment_k_range_erm(100, 1, 10, 1)
-    ass.experiment_k_range_srm(1000, 1, 10, 1)
-    # ass.cross_validation(1500, 3)
+    # ass.experiment_k_range_srm(1000, 1, 10, 1)
+    ass.cross_validation(500, 3)
 
 
