@@ -262,23 +262,30 @@ def ce_plot_weights(test_data, test_labels, T):
         matrix = generate_matrix(classifiers[j])
         axs[row,num].imshow(matrix, cmap = 'viridis', interpolation='nearest')
         num += 1
+        j += 1
         if num == 5:
             num = 0
             row = 1
+            
+            
+def ce_q3(train_data, train_labels, test_data, test_labels, T):    
+    eta = 6.30957344e-07
+    classifiers = SGD_ce(train_data, train_labels, eta, T)
+    accuracy = SGD_ce_test(classifiers, test_data, test_labels)
+    print(accuracy)
 
 
 
-
-"""
-train_data, train_labels, validation_data, validation_labels, test_data, test_labels = helper_ce()
-train_labels = np.array(train_labels, dtype=int) 
-validation_labels = np.array(validation_labels, dtype=int)  
-test_labels = np.array(test_labels, dtype=int)  
-ce_find_best_eta(train_data, train_labels, validation_data, validation_labels, 1, 1000)
-ce_plot_weights(test_data, test_labels, 20000)
-"""
-# classifiers = SGD_ce(train_data, train_labels,0.2,1000)
-
-
-#     
+def main():
+    # q1
+    
+    # q2    
+    train_data, train_labels, validation_data, validation_labels, test_data, test_labels = helper_ce()
+    train_labels = np.array(train_labels, dtype=int) 
+    validation_labels = np.array(validation_labels, dtype=int)  
+    test_labels = np.array(test_labels, dtype=int)  
+    ce_find_best_eta(train_data, train_labels, validation_data, validation_labels, 1, 1000)
+    ce_plot_weights(test_data, test_labels, 20000)
+    q3(train_data, train_labels, test_data, test_labels, 2000)
+    
 
