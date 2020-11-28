@@ -94,9 +94,8 @@ def SGD_ce(data, labels, eta_0, T):
         i = np.random.randint(len(data))
         x = data[i]
         y = labels[i] # The data labeling conatins all the decimal digits
-        gradients = np.dot((-1* eta_0),calculate_gradients(classifiers,x,y))
+        gradients = (-1* eta_0) * calculate_gradients(classifiers,x,y)
         classifiers = np.add(classifiers, gradients)
-        
     return classifiers
     
     
@@ -117,15 +116,13 @@ def calculate_gradients(classifiers,x,y):
 
 
 def calculate_probabilities(classifiers,x,y):
-    e_to_wx =  [math.exp(np.dot(x, classifiers[i])) for i in range(10)]
-    sum_e_to_wx = sum_e_to_wx(x, classifiers)
-    probs = np.division(e_to_wx, sum_e_to_wx)
+    dots = [np.dot(x, classifiers[i]) for i in range(10)] 
+    dots = dots - max(dots) # the exponent for the real dot is too high
+    e_to_dot = np.exp(dots)
+    sum_e_to_dot = sum(e_to_dot)
+    probs = np.division(e_to_dot, sum_e_to_dot)
     return probs
     
-
-def sum_e_to_wx(x,w):
-    s = np.sum(math.exp(np.dot(x, w)))
-    return s
 
 
 def generate_matrix(array):
@@ -221,7 +218,9 @@ def q4(train_data, train_labels,test_data, test_labels):
 
 
 train_data, train_labels, validation_data, validation_labels, test_data, test_labels = helper_ce()
-
+train_labels = np.array(train_labels, dtype=int) 
+validation_labels = np.array(validation_labels, dtype=int)  
+test_labels = np.array(test_labels, dtype=int)  
 
 classifiers = SGD_ce(train_data, train_labels,0.2,1000)
 
