@@ -41,6 +41,7 @@ def helper_hinge():
 	test_data = sklearn.preprocessing.scale(test_data_unscaled, axis=0, with_std=False)
 	return train_data, train_labels, validation_data, validation_labels, test_data, test_labels
 
+
 def helper_ce():
 	mnist = fetch_openml('mnist_784')
 	data = mnist['data']
@@ -83,17 +84,49 @@ def SGD_hinge(data, labels, C, eta_0, T):
 
 
 def SGD_ce(data, labels, eta_0, T):
-	"""
-	Implements multi-class cross entropy loss using SGD.
-	"""
-	# TODO: Implement me
-	pass
+    init_start_weights(np.ndarray.min(data), np.ndarray.max(data))
+    classifiers = []
+    for i in range(10):
+        classifiers.append(init_start_weights(np.ndarray.min(train_data), np.ndarray.max(train_data)))
+    classifiers = np.array(classifiers)
+    for t in range(1,T+1) :
+        eta = eta_0/t
+        i = np.random.randint(len(data))
+        x = data[i]
+        y = labels[i] # The data labeling conatins all the decimal digits
+        gradients = np.dot((-1* eta_0),calculate_gradients(classifiers,x,y))
+        classifiers = np.add(classifiers, gradients)
+        
+    return classifiers
+    
+    
+    
 	
 #################################
 
 
 
 #################################
+
+def calculate_gradients(classifiers,x,y):
+    probs = calculate_probabilities(classifiers,x,y)
+    gradients = probs * x
+    max_prob = np.argsort(probs)[-1:][0]
+    gradients[max_prob] -= x
+    return gradients
+
+
+def calculate_probabilities(classifiers,x,y):
+    e_to_wx =  [math.exp(np.dot(x, classifiers[i])) for i in range(10)]
+    sum_e_to_wx = sum_e_to_wx(x, classifiers)
+    probs = np.division(e_to_wx, sum_e_to_wx)
+    return probs
+    
+
+def sum_e_to_wx(x,w):
+    s = np.sum(math.exp(np.dot(x, w)))
+    return s
+
 
 def generate_matrix(array):
     '''The method is a helper method for view_image method.'''
@@ -111,7 +144,7 @@ def view_image(data):
     ''' The method plots the 784px image. 
         data = a 784 ints array, the same as the input data.'''
     matrix = generate_matrix(data)
-    plt.imshow(matrix, cmap=plt.get_cmap('gray'))
+    plt.imshow(matrix, cmap = 'viridis', interpolation='nearest')
     plt.show()
 
 
@@ -148,38 +181,49 @@ def find_best_eta(train_data, train_labels, validation_data, validation_labels, 
 
 
 def find_best_C(train_data, train_labels, validation_data, validation_labels, T):    
-    Cs = [np.float_power(10, k) for k in range(-4,4)]
+    cs = [np.float_power(10, -1 + (0.01*k)) for k in range(-15,50)]
+    #cs = [np.float_power(10, k) for k in range(-4,6)]
     avg_accuracy = []
-    for C in Cs:
+    for c in cs:
         accuracy_v = []
         for i in range(10):
-            w = SGD_hinge(train_data, train_labels, C, 0.01148154, T)
+            w = SGD_hinge(train_data, train_labels, c, 0.01148154, T)
             accuracy = SGD_hinge_test(w, validation_data, validation_labels)
             accuracy_v.append(accuracy)
         avg_accuracy.append(np.average(accuracy_v))
-    plt.plot(Cs, avg_accuracy)
+    plt.plot(cs, avg_accuracy)
     plt.xlabel("C")
     plt.ylabel("averge accuracy")
     plt.xscale("log")
-    return (Cs, avg_accuracy)
+    return (cs, avg_accuracy)
 
 
 
-train_data, train_labels, validation_data, validation_labels, test_data, test_labels = skeleton_sgd.helper_hinge()
-
-w = SGD_hinge(train_data, train_labels, 1, pow(10,-5) , 1000)
-
-
-w = SGD_hinge(train_data, train_labels, 1, 1 , 1000)
-
-
-
-(Cs, avg_accuracy) = find_best_C(train_data, train_labels, validation_data, validation_labels, 1000)
+def q3(train_data, train_labels,test_data, test_labels):
+    C = 0.20892961
+    eta = 0.01148154
+    T = 2000
+    w = SGD_hinge(train_data, train_labels, C, eta, T)
+    view_image(w)
 
 
-etas_nd = np.vstack((etas, avg_accuracy)).T
+def q4(train_data, train_labels,test_data, test_labels):
+    C = 0.20892961
+    eta = 0.01148154
+    T = 2000
+    accuracy_v = []
+    for i in range(10):
+        w = SGD_hinge(train_data, train_labels, C, eta, T)
+        accuracy = SGD_hinge_test(w, test_data, test_labels)
+        accuracy_v.append(accuracy)
+    accuracy = np.average(accuracy_v)
+    print(accuracy)
 
 
+train_data, train_labels, validation_data, validation_labels, test_data, test_labels = helper_ce()
+
+
+classifiers = SGD_ce(train_data, train_labels,0.2,1000)
 
 
 
