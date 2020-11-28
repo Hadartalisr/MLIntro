@@ -87,14 +87,14 @@ def SGD_ce(data, labels, eta_0, T):
     init_start_weights(np.ndarray.min(data), np.ndarray.max(data))
     classifiers = []
     for i in range(10):
-        classifiers.append(init_start_weights(np.ndarray.min(train_data), np.ndarray.max(train_data)))
+        classifiers.append(init_start_weights(np.ndarray.min(data), np.ndarray.max(data)))
     classifiers = np.array(classifiers)
     for t in range(1,T+1) :
-        eta = eta_0/t
         i = np.random.randint(len(data))
         x = data[i]
         y = labels[i] # The data labeling conatins all the decimal digits
-        gradients = (-1* eta_0) * calculate_gradients(classifiers,x,y)
+        gradients = calculate_gradients(classifiers,x,y)
+        gradients = [(-1*eta_0) * gradients[i] for i in range(10)]
         classifiers = np.add(classifiers, gradients)
     return classifiers
     
@@ -107,30 +107,6 @@ def SGD_ce(data, labels, eta_0, T):
 
 #################################
 
-def calculate_gradients(classifiers,x,y):
-    probs = calculate_probabilities(classifiers,x,y)
-    gradients = probs * x
-    max_prob = np.argsort(probs)[-1:][0]
-    gradients[max_prob] -= x
-    return gradients
-
-
-def calculate_probabilities(classifiers,x,y):
-    dots = [np.dot(x, classifiers[i]) for i in range(10)] 
-    dots = dots - max(dots) # the exponent for the real dot is too high
-    e_to_dot = np.exp(dots)
-    sum_e_to_dot = sum(e_to_dot)
-    probs = np.division(e_to_dot, sum_e_to_dot)
-    return probs
-    
-
-
-def generate_matrix(array):
-    '''The method is a helper method for view_image method.'''
-    matrix = np.zeros(shape=(28, 28))
-    for i in range(27):
-        matrix[i] = array[i*28:(i+1)*28]
-    return matrix
 
 
 def init_start_weights(low,high):
@@ -215,14 +191,72 @@ def q4(train_data, train_labels,test_data, test_labels):
         accuracy_v.append(accuracy)
     accuracy = np.average(accuracy_v)
     print(accuracy)
+    
+    
+def calculate_gradients(classifiers,x,y):
+    probs = calculate_probabilities(classifiers,x,y)
+    gradients = [probs[i] * x for i in range(10)]
+    max_prob = np.argsort(probs)[-1:][0]
+    gradients[max_prob] -= x
+    return gradients
 
 
+def calculate_probabilities(classifiers,x,y):
+    dots = [np.dot(x, classifiers[i]) for i in range(10)] 
+    dots = dots - max(dots) # the exponent for the real dot is too high
+    # print(dots)
+    e_to_dot = np.exp(dots)
+    # print(e_to_dot)
+    probs = e_to_dot / 1
+    # print(probs)
+    return probs
+    
+
+def generate_matrix(array):
+    '''The method is a helper method for view_image method.'''
+    matrix = np.zeros(shape=(28, 28))
+    for i in range(27):
+        matrix[i] = array[i*28:(i+1)*28]
+    return matrix
+
+
+def SGD_ce_test(classifiers, data, labels):
+    true_predictions = 0
+    for i in range(0,len(data)):
+        p_v = [np.dot(classifiers[d],data[i]) for d in range(10)]
+        y_hat = np.argsort(p_v)[-1:][0]
+        if labels[i] == y_hat :
+            true_predictions += 1
+    accuracy = true_predictions/len(data)
+    return accuracy
+
+
+def find_best_eta(train_data, train_labels, validation_data, validation_labels, C, T):    
+    # etas = [np.float_power(10, -2 + (0.01*k)) for k in range(-20,20)]
+    etas = [np.float_power(10, k) for k in range(-4,4)]
+    avg_accuracy = []
+    for eta in etas:
+        accuracy_v = []
+        for i in range(10):
+            classifiers = SGD_ce(train_data, train_labels, eta, T)
+            accuracy = SGD_ce_test(classifiers, validation_data, validation_labels)
+            accuracy_v.append(accuracy)
+        avg_accuracy.append(np.average(accuracy_v))
+    plt.plot(etas, avg_accuracy)
+    plt.xlabel("eta")
+    plt.ylabel("averge accuracy")
+    plt.xscale("log")
+    return (etas, avg_accuracy)
+
+
+"""
 train_data, train_labels, validation_data, validation_labels, test_data, test_labels = helper_ce()
 train_labels = np.array(train_labels, dtype=int) 
 validation_labels = np.array(validation_labels, dtype=int)  
 test_labels = np.array(test_labels, dtype=int)  
+"""
+# classifiers = SGD_ce(train_data, train_labels,0.2,1000)
 
-classifiers = SGD_ce(train_data, train_labels,0.2,1000)
 
-
+find_best_eta(train_data, train_labels, validation_data, validation_labels, 1, 1000)    
 
