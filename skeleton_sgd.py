@@ -3,7 +3,7 @@
 #################################
 
 # Please import and use stuff only from the packages numpy, sklearn, matplotlib
-import math
+
 import numpy as np
 import numpy.random
 from sklearn.datasets import fetch_openml
@@ -67,14 +67,14 @@ def helper_ce():
 
 
 def SGD_hinge(data, labels, C, eta_0, T):
-    w = init_start_weights(np.ndarray.min(data), np.ndarray.max(data))
+    w = np.zeros(784)
     for t in range(1,T+1) :
-        eta = eta_0/t
+        eta = (eta_0/t)
         i = np.random.randint(len(data))
         x = data[i]
         y = labels[i] # The data labeling is already in +-1 form (8 = 1, 0 = -1) 
         r = y * np.dot(x,w) # prediction
-        w = (1-eta_0)*w 
+        w = (1-eta)*w 
         if r < 1:        
             w = np.add(w, eta * C * y * x)
     return w 
@@ -84,12 +84,6 @@ def SGD_hinge(data, labels, C, eta_0, T):
 
 
 def SGD_ce(data, labels, eta_0, T):
-    
-    """
-    classifiers = []
-    for i in range(10):
-        classifiers.append(init_start_weights(np.ndarray.min(data), np.ndarray.max(data)))
-    classifiers = np.array(classifiers)"""
     classifiers = np.zeros((10,784))
     for t in range(1,T+1) :
         i = np.random.randint(len(data))
@@ -108,11 +102,6 @@ def SGD_ce(data, labels, eta_0, T):
 
 
 #################################
-
-
-
-def init_start_weights(low,high):
-    return np.random.uniform(low=low,high=high, size=(784,))
 
 
 def view_image(data):
@@ -138,7 +127,7 @@ def SGD_hinge_test(w, data, labels):
 
 
 def find_best_eta(train_data, train_labels, validation_data, validation_labels, C, T):    
-    etas = [np.float_power(10, -2 + (0.01*k)) for k in range(-20,20)]
+    etas = [np.float_power(10, -1 + (0.01*k)) for k in range(0,100)]
     # for the first observation - etas = [np.float_power(10, k) for k in range(-4,4)]
     avg_accuracy = []
     for eta in etas:
@@ -150,27 +139,31 @@ def find_best_eta(train_data, train_labels, validation_data, validation_labels, 
         avg_accuracy.append(np.average(accuracy_v))
     plt.plot(etas, avg_accuracy)
     plt.xlabel("eta")
-    plt.ylabel("averge accuracy")
+    plt.ylabel("average accuracy")
     plt.xscale("log")
-    return (etas, avg_accuracy)
+    u = np.argsort(avg_accuracy)[-1:][0]
+    return etas[u]
 
 
-def find_best_C(train_data, train_labels, validation_data, validation_labels, T):    
-    cs = [np.float_power(10, -1 + (0.01*k)) for k in range(-15,50)]
-    # for the first observation - cs = [np.float_power(10, k) for k in range(-4,6)]
+def find_best_C(train_data, train_labels, validation_data, validation_labels, T, eta):    
+    cs = [np.float_power(10, -0.4 + (0.01*k)) for k in range(-100, 100)]
+    # for the first observation - 
+    # cs = [np.float_power(10, 0.1*k) for k in range(-100,-10)]
     avg_accuracy = []
     for c in cs:
         accuracy_v = []
         for i in range(10):
-            w = SGD_hinge(train_data, train_labels, c, 0.01148154, T)
+            w = SGD_hinge(train_data, train_labels, c, eta, T)
             accuracy = SGD_hinge_test(w, validation_data, validation_labels)
             accuracy_v.append(accuracy)
         avg_accuracy.append(np.average(accuracy_v))
     plt.plot(cs, avg_accuracy)
     plt.xlabel("C")
-    plt.ylabel("averge accuracy")
+    plt.ylabel("average accuracy")
     plt.xscale("log")
-    return (cs, avg_accuracy)
+    u = np.argsort(avg_accuracy)[-1:][0]
+    print(avg_accuracy[u]) 
+    return cs[u]
 
 
 
@@ -182,18 +175,6 @@ def q3(train_data, train_labels,test_data, test_labels):
     view_image(w)
 
 
-def q4(train_data, train_labels,test_data, test_labels):
-    C = 0.20892961
-    eta = 0.01148154
-    T = 2000
-    accuracy_v = []
-    for i in range(10):
-        w = SGD_hinge(train_data, train_labels, C, eta, T)
-        accuracy = SGD_hinge_test(w, test_data, test_labels)
-        accuracy_v.append(accuracy)
-    accuracy = np.average(accuracy_v)
-    print(accuracy)
-    
     
 def calculate_gradients(classifiers,x,y):
     probs = calculate_probabilities(classifiers,x)
@@ -247,8 +228,8 @@ def ce_find_best_eta(train_data, train_labels, validation_data, validation_label
     plt.xlabel("eta")
     plt.ylabel("average accuracy")
     plt.xscale("log")
-    ce_nd = np.array([etas, avg_accuracy]).T
-    return ce_nd
+    u = np.argsort(avg_accuracy)[-1:][0]
+    return ce[u]
 
 
 def ce_plot_weights(test_data, test_labels, T):    
@@ -268,8 +249,7 @@ def ce_plot_weights(test_data, test_labels, T):
             row = 1
             
             
-def ce_q3(train_data, train_labels, test_data, test_labels, T):    
-    eta = 6.30957344e-07
+def ce_q3(train_data, train_labels, test_data, test_labels, T, eta):    
     classifiers = SGD_ce(train_data, train_labels, eta, T)
     accuracy = SGD_ce_test(classifiers, test_data, test_labels)
     print(accuracy)
@@ -278,14 +258,36 @@ def ce_q3(train_data, train_labels, test_data, test_labels, T):
 
 def main():
     # q1
+    train_data, train_labels, validation_data, validation_labels, test_data, test_labels = helper_hinge()
+    # q1.a
+    best_eta = find_best_eta(train_data, train_labels, validation_data, validation_labels, 1, 1000)
+    print(best_eta)
+    # q1.b
+    best_c = find_best_C(train_data, train_labels, validation_data, validation_labels, 1000, best_eta)
+    print(best_c)
+    # q1.c
+    w = SGD_hinge(train_data, train_labels, best_c, best_eta,20000)
+    view_image(w)
+    # q1.d
+    accuracy_v = []
+    for i in range(10):
+        w = SGD_hinge(train_data, train_labels, best_c, best_eta, 20000)
+        accuracy = SGD_hinge_test(w, test_data, test_labels)
+        accuracy_v.append(accuracy)
+    accuracy = np.average(accuracy_v)
+    print(accuracy)
     
     # q2    
     train_data, train_labels, validation_data, validation_labels, test_data, test_labels = helper_ce()
     train_labels = np.array(train_labels, dtype=int) 
     validation_labels = np.array(validation_labels, dtype=int)  
     test_labels = np.array(test_labels, dtype=int)  
-    ce_find_best_eta(train_data, train_labels, validation_data, validation_labels, 1, 1000)
+    # q2.a
+    best_eta = ce_find_best_eta(train_data, train_labels, validation_data, validation_labels, 1, 1000)
+    print(best_eta)
+    # q2.b
     ce_plot_weights(test_data, test_labels, 20000)
-    q3(train_data, train_labels, test_data, test_labels, 2000)
+    #q2.c
+    q3(train_data, train_labels, test_data, test_labels, 2000, best_eta)
     
 
