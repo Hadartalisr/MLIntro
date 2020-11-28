@@ -73,7 +73,7 @@ def SGD_hinge(data, labels, C, eta_0, T):
         x = data[i]
         y = labels[i] # The data labeling is already in +-1 form (8 = 1, 0 = -1) 
         r = y * np.dot(x,w) # prediction
-        w = np.multiply((1-eta_0),w) 
+        w = (1-eta_0)*w 
         if r < 1:        
             w = np.add(w, eta * C * y * x)
     return w 
@@ -119,22 +119,49 @@ def sign(r):
     return (1 if r>0 else -1)
 
 
-def SGD_hinge_test(w, test_data, test_labels):
-    false_predictions = 0
-    for i in range(0,len(test_data)):
-        r = sign(np.dot(w, test_data[i]))
-        if r * test_labels[i] < 0:
-            false_predictions += 1
-    accuracy.append((false_predictions/len(test_data)))
+def SGD_hinge_test(w, data, labels):
+    true_predictions = 0
+    for i in range(0,len(data)):
+        r = sign(np.dot(w, data[i]))
+        if (r * labels[i]) > 0:
+            true_predictions += 1
+    accuracy = true_predictions/len(data)
     return accuracy
 
 
-def find_best_eta(data, labels, C, eta_0, T):
-    
+def find_best_eta(train_data, train_labels, validation_data, validation_labels, C, T):    
+    etas = [np.float_power(10, -2 + (0.01*k)) for k in range(-20,20)]
+    #etas = [np.float_power(10, k) for k in range(-4,4)]
+    avg_accuracy = []
+    for eta in etas:
+        accuracy_v = []
+        for i in range(10):
+            w = SGD_hinge(train_data, train_labels, C, eta, T)
+            accuracy = SGD_hinge_test(w, validation_data, validation_labels)
+            accuracy_v.append(accuracy)
+        avg_accuracy.append(np.average(accuracy_v))
+    plt.plot(etas, avg_accuracy)
+    plt.xlabel("eta")
+    plt.ylabel("averge accuracy")
+    plt.xscale("log")
+    return (etas, avg_accuracy)
 
 
-
-
+def find_best_C(train_data, train_labels, validation_data, validation_labels, T):    
+    Cs = [np.float_power(10, k) for k in range(-4,4)]
+    avg_accuracy = []
+    for C in Cs:
+        accuracy_v = []
+        for i in range(10):
+            w = SGD_hinge(train_data, train_labels, C, 0.01148154, T)
+            accuracy = SGD_hinge_test(w, validation_data, validation_labels)
+            accuracy_v.append(accuracy)
+        avg_accuracy.append(np.average(accuracy_v))
+    plt.plot(Cs, avg_accuracy)
+    plt.xlabel("C")
+    plt.ylabel("averge accuracy")
+    plt.xscale("log")
+    return (Cs, avg_accuracy)
 
 
 
@@ -147,8 +174,10 @@ w = SGD_hinge(train_data, train_labels, 1, 1 , 1000)
 
 
 
+(Cs, avg_accuracy) = find_best_C(train_data, train_labels, validation_data, validation_labels, 1000)
 
 
+etas_nd = np.vstack((etas, avg_accuracy)).T
 
 
 
