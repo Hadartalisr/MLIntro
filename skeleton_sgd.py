@@ -84,11 +84,13 @@ def SGD_hinge(data, labels, C, eta_0, T):
 
 
 def SGD_ce(data, labels, eta_0, T):
-    init_start_weights(np.ndarray.min(data), np.ndarray.max(data))
+    
+    """
     classifiers = []
     for i in range(10):
         classifiers.append(init_start_weights(np.ndarray.min(data), np.ndarray.max(data)))
-    classifiers = np.array(classifiers)
+    classifiers = np.array(classifiers)"""
+    classifiers = np.zeros((10,784))
     for t in range(1,T+1) :
         i = np.random.randint(len(data))
         x = data[i]
@@ -137,7 +139,7 @@ def SGD_hinge_test(w, data, labels):
 
 def find_best_eta(train_data, train_labels, validation_data, validation_labels, C, T):    
     etas = [np.float_power(10, -2 + (0.01*k)) for k in range(-20,20)]
-    #etas = [np.float_power(10, k) for k in range(-4,4)]
+    # for the first observation - etas = [np.float_power(10, k) for k in range(-4,4)]
     avg_accuracy = []
     for eta in etas:
         accuracy_v = []
@@ -155,7 +157,7 @@ def find_best_eta(train_data, train_labels, validation_data, validation_labels, 
 
 def find_best_C(train_data, train_labels, validation_data, validation_labels, T):    
     cs = [np.float_power(10, -1 + (0.01*k)) for k in range(-15,50)]
-    #cs = [np.float_power(10, k) for k in range(-4,6)]
+    # for the first observation - cs = [np.float_power(10, k) for k in range(-4,6)]
     avg_accuracy = []
     for c in cs:
         accuracy_v = []
@@ -194,20 +196,19 @@ def q4(train_data, train_labels,test_data, test_labels):
     
     
 def calculate_gradients(classifiers,x,y):
-    probs = calculate_probabilities(classifiers,x,y)
-    gradients = [probs[i] * x for i in range(10)]
-    max_prob = np.argsort(probs)[-1:][0]
-    gradients[max_prob] -= x
+    probs = calculate_probabilities(classifiers,x)
+    probs[y] -= 1
+    gradients = [probs[i] * x for i in range(10)]    
     return gradients
 
 
-def calculate_probabilities(classifiers,x,y):
+def calculate_probabilities(classifiers,x):
     dots = [np.dot(x, classifiers[i]) for i in range(10)] 
-    dots = dots - max(dots) # the exponent for the real dot is too high
+    max_dot = np.max(dots)
+    dots = dots - max_dot # the exponent for the real dot is too high
     # print(dots)
     e_to_dot = np.exp(dots)
-    # print(e_to_dot)
-    probs = e_to_dot / 1
+    probs = e_to_dot / np.sum(e_to_dot)
     # print(probs)
     return probs
     
@@ -231,9 +232,9 @@ def SGD_ce_test(classifiers, data, labels):
     return accuracy
 
 
-def find_best_eta(train_data, train_labels, validation_data, validation_labels, C, T):    
-    # etas = [np.float_power(10, -2 + (0.01*k)) for k in range(-20,20)]
-    etas = [np.float_power(10, k) for k in range(-4,4)]
+def ce_find_best_eta(train_data, train_labels, validation_data, validation_labels, T):    
+    etas = [np.float_power(10, -7 + (0.02*k)) for k in range(0,50)]
+    # for the first observation - etas = [np.float_power(10, k) for k in range(-10,10)]
     avg_accuracy = []
     for eta in etas:
         accuracy_v = []
@@ -244,9 +245,28 @@ def find_best_eta(train_data, train_labels, validation_data, validation_labels, 
         avg_accuracy.append(np.average(accuracy_v))
     plt.plot(etas, avg_accuracy)
     plt.xlabel("eta")
-    plt.ylabel("averge accuracy")
+    plt.ylabel("average accuracy")
     plt.xscale("log")
-    return (etas, avg_accuracy)
+    ce_nd = np.array([etas, avg_accuracy]).T
+    return ce_nd
+
+
+def ce_plot_weights(test_data, test_labels, T):    
+    eta = 6.30957344e-07
+    classifiers = SGD_ce(test_data, test_labels, eta, T)
+    num = 0
+    row = 0
+    fig, axs = plt.subplots(2, 5)
+    j = 0
+    while(j < 10):
+        matrix = generate_matrix(classifiers[j])
+        axs[row,num].imshow(matrix, cmap = 'viridis', interpolation='nearest')
+        num += 1
+        if num == 5:
+            num = 0
+            row = 1
+
+
 
 
 """
@@ -254,9 +274,11 @@ train_data, train_labels, validation_data, validation_labels, test_data, test_la
 train_labels = np.array(train_labels, dtype=int) 
 validation_labels = np.array(validation_labels, dtype=int)  
 test_labels = np.array(test_labels, dtype=int)  
+ce_find_best_eta(train_data, train_labels, validation_data, validation_labels, 1, 1000)
+ce_plot_weights(test_data, test_labels, 20000)
 """
 # classifiers = SGD_ce(train_data, train_labels,0.2,1000)
 
 
-find_best_eta(train_data, train_labels, validation_data, validation_labels, 1, 1000)    
+#     
 
