@@ -1,5 +1,5 @@
 #################################
-# Your name:
+# Your name: Hadar Tal
 #################################
 
 # Please import and use stuff only from the packages numpy, sklearn, matplotlib
@@ -8,6 +8,7 @@ import numpy as np
 import numpy.random
 from sklearn.datasets import fetch_openml
 import sklearn.preprocessing
+import matplotlib.pyplot as plt
 
 """
 Assignment 3 question 2 skeleton.
@@ -80,6 +81,47 @@ def SGD_ce(data, labels, eta_0, T):
 	
 #################################
 
-# Place for additional code
+
 
 #################################
+
+def generate_matrix(array):
+    '''The method is a helper method for view_image method.'''
+    matrix = np.zeros(shape=(28, 28))
+    for i in range(27):
+        matrix[i] = array[i*28:(i+1)*28]
+    return matrix
+
+
+def view_image(data):
+    ''' The method plots the 784px image. 
+        data = a 784 ints array, the same as the input data.'''
+    matrix = generate_matrix(data)
+    plt.imshow(matrix, cmap=plt.get_cmap('gray'))
+    plt.show()
+
+
+
+# main
+
+def init_start_weights(){
+    return np.zeros(784, dtype=float)
+}
+
+train_data, train_labels, validation_data, validation_labels, test_data, test_labels = skeleton_sgd.helper_hinge()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
