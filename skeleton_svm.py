@@ -56,7 +56,7 @@ def train_three_kernels(X_train, y_train, X_val, y_val):
     create_plot(X_train, points[1], linear_model)
     plt.title('linear Classifier - # of support vectors is ' +
               str(sum(linear_support_vectors)) )
-    plt.show()
+    # plt.show()
     
     rbf_model = svm.SVC(C=1000,kernel='rbf')
     rbf_model.fit(X_train, y_train)    
@@ -64,7 +64,7 @@ def train_three_kernels(X_train, y_train, X_val, y_val):
     create_plot(X_train, y_train, rbf_model)
     plt.title('rbf Classifier - # of support vectors is ' +
               str(sum(rbf_support_vectors)) )
-    plt.show()
+    # plt.show()
     
     qudratic_model = svm.SVC(C=1000,kernel='poly',degree=2)
     qudratic_model.fit(X_train, y_train)    
@@ -72,7 +72,7 @@ def train_three_kernels(X_train, y_train, X_val, y_val):
     create_plot(X_train, y_train, qudratic_model)
     plt.title('qudratic Classifier - # of support vectors is ' +
               str(sum(qudratic_support_vectors)) )
-    plt.show()
+    # plt.show()
     
     ret = np.array([linear_support_vectors, rbf_support_vectors, 
                     qudratic_support_vectors])
@@ -85,8 +85,31 @@ def linear_accuracy_per_C(X_train, y_train, X_val, y_val):
         Returns: np.ndarray of shape (11,) :
                     An array that contains the accuracy of the resulting model on the VALIDATION set.
     """
-    # TODO: add your code here
-
+    C_vector = [pow(10,i) for i in range(-5,6)]
+    train_accuracy_vector = []
+    validation_accuracy_vector = []
+    for C in C_vector:
+        linear_model = svm.SVC(C=C,kernel='linear')
+        linear_model.fit(X_train, y_train)    
+        train_accuracy_vector.append(linear_model.score(X_train, y_train))
+        validation_accuracy_vector.append(linear_model.score(X_val, y_val))
+        
+        if C in [pow(10,i) for i in range(-5,6,3)]:
+            create_plot(X_train, y_train, linear_model)
+            plt.title('linear Classifier - C = ' + str(C))
+            plt.show()
+        
+    plt.plot(C_vector, train_accuracy_vector, label="train_accuracy")
+    plt.plot(C_vector, validation_accuracy_vector, label="validation_accuracy")
+    plt.xlabel("C")
+    plt.legend()
+    plt.ylabel("accuracy")
+    plt.xscale("log")
+    
+    
+    return validation_accuracy_vector
+        
+    
 
 def rbf_accuracy_per_gamma(X_train, y_train, X_val, y_val):
     """
@@ -106,7 +129,7 @@ def text(data, labels):
     return accuracy    
     
 points = get_points()
-ret = train_three_kernels(points[0], points[1], points[2], points[3])
-print(ret)
-
-    
+# ret = train_three_kernels(points[0], points[1], points[2], points[3])
+# print(ret)
+ret2 = linear_accuracy_per_C(points[0], points[1], points[2], points[3])
+print(ret2)    
