@@ -106,7 +106,6 @@ def linear_accuracy_per_C(X_train, y_train, X_val, y_val):
     plt.ylabel("accuracy")
     plt.xscale("log")
     
-    
     return validation_accuracy_vector
         
     
@@ -116,7 +115,31 @@ def rbf_accuracy_per_gamma(X_train, y_train, X_val, y_val):
         Returns: np.ndarray of shape (11,) :
                     An array that contains the accuracy of the resulting model on the VALIDATION set.
     """
-    # TODO: add your code here
+    #gamma_vector = [pow(10,i) for i in range(-5,5)]
+    gamma_vector = [i for i in range(1,15)]
+    train_accuracy_vector = []
+    validation_accuracy_vector = []
+    for gammma in gamma_vector:
+        rbf_model = svm.SVC(kernel='rbf',gamma=gammma)
+        rbf_model.fit(X_train, y_train)    
+        train_accuracy_vector.append(rbf_model.score(X_train, y_train))
+        validation_accuracy_vector.append(rbf_model.score(X_val, y_val))
+        """ create_plot """
+        # create_plot(X_train, y_train, rbf_model)
+        # plt.title('rbf Classifier - gamma = ' + str(gammma))
+        # plt.show()
+        
+    plt.plot(gamma_vector, train_accuracy_vector, label="train_accuracy")
+    plt.plot(gamma_vector, validation_accuracy_vector, label="validation_accuracy")
+    plt.xlabel("gamma")
+    plt.legend()
+    plt.ylabel("accuracy")
+    # plt.xscale("log")
+    
+    return validation_accuracy_vector
+    
+    
+    
     
 
 def text(data, labels):
@@ -131,5 +154,11 @@ def text(data, labels):
 points = get_points()
 # ret = train_three_kernels(points[0], points[1], points[2], points[3])
 # print(ret)
-ret2 = linear_accuracy_per_C(points[0], points[1], points[2], points[3])
-print(ret2)    
+# ret2 = linear_accuracy_per_C(points[0], points[1], points[2], points[3])
+# print(ret2)    
+ret3 = rbf_accuracy_per_gamma(points[0], points[1], points[2], points[3])
+print(ret3)  
+
+
+
+
