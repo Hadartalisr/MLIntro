@@ -289,5 +289,8 @@ def main():
     ce_plot_weights(test_data, test_labels, 20000)
     #q2.c
     q3(train_data, train_labels, test_data, test_labels, 2000, best_eta)
+
     
+main()
+
 
